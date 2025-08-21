@@ -1,4 +1,4 @@
-vpython
-numpy
-pandas
-quaternion
+numpy>=1.24
+scipy>=1.10
+ahrs==0.3.1
+vpython>=7.6
