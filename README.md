@@ -1,49 +1,39 @@
-# 3D Visualization Project
+# Real-Time Motion Tracking & Visualization
 
-## Overview
-The 3D Visualization Project is designed to visualize sensor data received via UDP. It processes incoming data from a mobile device and renders a 3D representation of the sensor's orientation in real-time. This project utilizes Python and various libraries to achieve smooth and interactive visualizations.
+This project receives IMU data (accelerometer m/s^2, gyroscope rad/s, magnetometer µT) from HyperIMU over UDP, performs sensor fusion (Madgwick), estimates speed and distance via integration with ZUPT and filtering, and visualizes the phone orientation and motion in 3D using VPython.
 
-## Project Structure
-```
-3d-visualization-project
-├── src
-│   ├── main.py               # Main entry point of the application
-│   ├── udp_reciver.py        # Handles receiving UDP packets
-│   ├── sensor_fussion.py      # Processes sensor data and updates orientation
-│   ├── visualisation.py       # Renders the visual representation of sensor data
-│   └── utils
-│       └── __init__.py       # Initializes the utils package
-├── requirements.txt           # Lists project dependencies
-├── README.md                  # Project documentation
-└── .gitignore                 # Specifies files to ignore by Git
+## Features
+- Real-time orientation via Madgwick (AHRS)
+- Speed and distance estimation with gravity removal, high/low-pass filtering, ZUPT
+- Rotation tracking (yaw/pitch/roll) with drift control
+- Multithreaded: UDP receive, processing, visualization
+- VPython visualizer with live metrics overlay
+- Headless demo mode for environments without GUI
+
+## Install
+```bash
+python3 -m venv .venv && source .venv/bin/activate
+pip install -r requirements.txt
 ```
 
-## Installation
-To set up the project, follow these steps:
-
-1. Clone the repository:
-   ```
-   git clone https://github.com/yourusername/3d-visualization-project.git
-   ```
-2. Navigate to the project directory:
-   ```
-   cd 3d-visualization-project
-   ```
-3. Install the required dependencies:
-   ```
-   pip install -r requirements.txt
-   ```
-
-## Usage
-To run the application, execute the following command:
-```
-python src/main.py
+## Run (UDP from HyperIMU)
+```bash
+python -m rt_motion.main --udp-port 5555 --rate 100
 ```
 
-Make sure your mobile device is configured to send UDP packets to the specified port (5006 in this case).
+## Run (demo, headless)
+```bash
+python -m rt_motion.main --demo --headless --rate 100
+```
 
-## Contributing
-Contributions are welcome! Please feel free to submit a pull request or open an issue for any suggestions or improvements.
+## HyperIMU
+Configure HyperIMU to send CSV over UDP with accelerometer (m/s^2), gyroscope (rad/s), magnetometer (µT). The parser attempts to auto-detect column order; you can override via CLI.
 
-## License
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+## Tuning flags
+- --acc-highpass-alpha, --acc-lowpass-alpha
+- --zupt-acc-thresh, --zupt-gyro-thresh
+- --kalman-use (enable simple 1D Kalman on velocity)
+
+## Notes
+- Distance from double integration is sensitive to bias. Keep the phone stationary for a second at start for initial bias settle.
+- Headless mode prints periodic stats and skips VPython.
